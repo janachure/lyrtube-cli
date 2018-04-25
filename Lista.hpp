@@ -7,26 +7,28 @@ Lista<T>::Lista() {
     // Completar
 }
 
-// Inicializa una lista vacía y luego utiliza operator= para no duplicar el
-// código de la copia de una lista.
+// Inicializa una lista vacÃ­a y luego utiliza operator= para no duplicar el
+// cÃ³digo de la copia de una lista.
 template <typename T>
 Lista<T>::Lista(const Lista<T>& l) : Lista() { *this = l; }
 
 template <typename T>
 Lista<T>::~Lista() {
     // Completar
-    while (_primero != NULL) {
+/*    while (_primero != NULL) {
         Nodo *p = _primero;
         Nodo *o= _ultimo;
         _primero = _primero->_siguiente;
         _ultimo = _ultimo ->_anterior;
         delete p;
-    }
+    }*/
 };
 
 template <typename T>
 Lista<T>& Lista<T>::operator=(const Lista<T>& l) {
+    return *this;
     // Completar
+
 
 }
 
@@ -52,14 +54,19 @@ void Lista<T>::agregarAdelante(const T& elem) {
 template <typename T>
 void Lista<T>::agregarAtras(const T& elem) {
     // Completar
-    Nodo* nuevo= new Nodo;
-    if (_primero==NULL){
-        _primero=nuevo;
+    Nodo *nuevo = new Nodo;
+    if (_primero == NULL) {
+        _primero = nuevo;
+        _ultimo = nuevo;
+        nuevo->_siguiente = NULL;
+        nuevo->_anterior = NULL;
+    } else {
+        nuevo->_valor = elem;
+        _ultimo->_siguiente=nuevo;
+        nuevo->_anterior = _ultimo;
+        nuevo->_siguiente = NULL;
+        _ultimo = nuevo;
     }
-    (*nuevo)._valor=elem;
-    (*nuevo)._anterior=_ultimo;
-    _ultimo=nuevo;
-    (*nuevo)._siguiente=NULL;
 };
 template <typename T>
 int Lista<T>::longitud() const {
@@ -82,6 +89,38 @@ const T& Lista<T>::iesimo(Nat i) const {
     nuevo=_primero;
     T resultado;
     int contador=0;
+    for (int j = 0; j < longitud(); ++j) {
+        nuevo = nuevo->_siguiente;
+        if (j==i) {
+            resultado = nuevo->_valor;
+            j=longitud();
+        }
+    }
+    /*while (nuevo!= NULL) {
+        if (contador==i) {
+            resultado = nuevo->_valor;
+            nuevo->_siguiente=NULL;
+        };
+        nuevo = nuevo-> _siguiente;
+        contador++;
+    }*/
+    return resultado;
+}
+
+template <typename T>
+T& Lista<T>::iesimo(Nat i) {
+    // Completar
+
+    Nodo* nuevo=_primero;
+    T resultado=0;
+    //int contador=0;
+    for (int j = 0; j < longitud(); ++j) {
+        nuevo = nuevo->_siguiente;
+        if (j==i) {
+            resultado = nuevo-> _valor;
+            j=longitud();
+        }
+    }/*
     while (nuevo!= NULL) {
         if (contador==i) {
             resultado = nuevo->_valor;
@@ -89,3 +128,30 @@ const T& Lista<T>::iesimo(Nat i) const {
         };
         nuevo = nuevo-> _siguiente;
         contador++;
+    }*/
+    return resultado;
+}
+template <typename T>
+void Lista<T>::eliminar(Nat i) {
+    Nodo *nuevo = _primero;
+    if (i == 0) {
+        _primero = _primero->_siguiente;
+        delete nuevo;
+    }
+    for (int j = 1; j < longitud(); ++j) {
+        nuevo = nuevo->_siguiente;
+        if (i == j) {
+            nuevo->_anterior=nuevo->_siguiente;
+            nuevo->_siguiente=nuevo->_anterior;
+            delete nuevo;
+            j=longitud();
+        }
+    }
+};
+
+
+template <typename T>
+void Lista<T>::mostrar(std::ostream& o) {
+    // Completar
+}
+#include "Lista.h"
