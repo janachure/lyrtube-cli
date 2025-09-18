@@ -4,6 +4,10 @@
 *.dll
 *.so
 *.dylib
+lyrtube-cli
+lyrtube-cli-linux-amd64
+lyrtube-cli-windows-amd64.exe
+lyrtube-cli-darwin-amd64
 
 # Test binary, built with `go test -c`
 *.test

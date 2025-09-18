@@ -27,7 +27,7 @@ var configEditCmd = &cobra.Command{
 		}
 		c := exec.Command(editor, path)
 		c.Stdin = os.Stdin
-		c.Stdout = os.Stdout
+		c.Stdout = os.Stdout	
 		c.Stderr = os.Stderr
 		if err := c.Run(); err != nil {
 			color.Red("Failed to open editor: %v", err)
@@ -43,11 +43,10 @@ var configShowCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := config.Get()
 		fmt.Printf("Config file: %s\n", config.ConfigPath())
-		fmt.Printf("pthon path: %s\n", cfg.PythonPath)
-		fmt.Printf("yt-dlp path: %s\n", cfg.YtdlpScript)
 		fmt.Printf("output dir: %s\n", cfg.OutputDir)
 		fmt.Printf("audio fmt: %s\n", cfg.AudioFormat)
 		fmt.Printf("audio quality: %s\n", cfg.AudioQuality)
+		fmt.Printf("lyrics mode: %s\n", cfg.LyricsMode)
 	},
 }
 

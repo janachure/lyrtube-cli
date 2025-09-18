@@ -2,19 +2,14 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
-	"time"
 
 	"lyrtube-cli/internal/config"
 	"lyrtube-cli/internal/downloader"
-	"lyrtube-cli/internal/lyrics"
+	"lyrtube-cli/internal/processor"
+	"lyrtube-cli/internal/ui"
 
-	"github.com/briandowns/spinner"
 	"github.com/fatih/color"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -36,68 +31,61 @@ var downloadCmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		url := args[0]
-
 		cfg := config.Get()
 
-		// CLI flags override config
-		if outDir == "" {
-			outDir = cfg.OutputDir
-		}
-		if fmtAudio == "" {
-			fmtAudio = cfg.AudioFormat
-		}
-		if aq == "" {
-			aq = cfg.AudioQuality
-		}
+		// Apply CLI flag overrides
+		outputDir := getOutputDir(cfg)
+		audioFormat := getAudioFormat(cfg)
+		audioQuality := getAudioQuality(cfg)
 
 		color.Yellow("Preparing to download audio from: %s", url)
 
-		// start spinner
-		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
-		s.Suffix = " Downloading..."
-		s.Start()
+		// Download with spinner
+		spinner := ui.NewSpinner("Downloading...")
+		spinner.Start()
 
-		title, artist, err := downloader.DownloadAudio(cfg.PythonPath, cfg.YtdlpScript, outDir, url, fmtAudio, aq, cfg)
-		s.Stop()
-
+		tracks, err := downloader.DownloadAudio(outputDir, url, audioFormat, audioQuality, cfg)
 		if err != nil {
+			spinner.Stop()
 			color.Red("Download failed: %v", err)
 			os.Exit(1)
 		}
+		spinner.Stop()
+		color.Green("Download finished — %d track(s) saved to %s", len(tracks), outputDir)
 
-		color.Green("Download finished — saved to %s", outDir)
-
-		if cfg.LyricsEnabled && title != "" {
-			query := fmt.Sprintf("%s - %s", title, artist)
-			color.Cyan("Searching lyrics for: %s", query)
-
-			lr, lerr := lyrics.FetchLyrics(query)
-			if lerr != nil {
-				color.Yellow("Lyrics not found for \"%s\".", query)
-
-				prompt := promptui.Prompt{
-					Label:   "Enter alternative query for lyrics (or leave blank to skip)",
-					Default: query,
-				}
-				alt, _ := prompt.Run()
-				if strings.TrimSpace(alt) != "" {
-					lr, lerr = lyrics.FetchLyrics(alt)
-				}
+		// Process lyrics for each track if needed
+		lyricsProcessor := processor.NewLyricsProcessor(cfg)
+		for i, track := range tracks {
+			if len(tracks) > 1 {
+				color.Cyan("Processing lyrics for track %d/%d: %s", i+1, len(tracks), track.Title)
 			}
-
-			if lerr == nil && lr != nil {
-				lrcPath := filepath.Join(outDir, fmt.Sprintf("%s.lrc", title))
-				if err := lyrics.WriteLRCFile(lrcPath, lr); err != nil {
-					color.Red("Failed to save lyrics: %v", err)
-				} else {
-					color.Green("Lyrics saved to %s", lrcPath)
-				}
-			} else {
-				color.Yellow("Skipping lyrics for \"%s\"", query)
+			if err := lyricsProcessor.ProcessLyrics(track.FilePath, track.Title, track.Artist, audioFormat); err != nil {
+				color.Yellow("Lyrics processing completed with warnings for: %s", track.Title)
 			}
 		}
-
 	},
+}
+
+// Helper functions for CLI flag overrides
+func getOutputDir(cfg *config.Config) string {
+	if outDir != "" {
+		return outDir
+	}
+	return cfg.OutputDir
+}
+
+func getAudioFormat(cfg *config.Config) string {
+	if fmtAudio != "" {
+		return fmtAudio
+	}
+	return cfg.AudioFormat
+}
+
+func getAudioQuality(cfg *config.Config) string {
+	if aq != "" {
+		return aq
+	}
+	return cfg.AudioQuality
 }
 
 func init() {

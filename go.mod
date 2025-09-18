@@ -4,6 +4,7 @@ go 1.24.5
 
 require (
 	github.com/briandowns/spinner v1.23.2
+	github.com/dhowden/tag v0.0.0-20240417053706-3d75831295e8
 	github.com/fatih/color v1.18.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.10.1
