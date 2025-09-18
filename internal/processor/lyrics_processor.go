@@ -2,6 +2,7 @@ package processor
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -38,7 +39,7 @@ func (lp *LyricsProcessor) ProcessLyrics(audioFilePath, title, artist, audioForm
 	safeTitle := lp.createSafeFilename(title)
 
 	// Handle lyrics based on config preference
-	return lp.handleLyricsMode(audioFilePath, safeTitle, audioFormat, lr)
+	return lp.handleLyricsMode(audioFilePath, safeTitle, lr)
 }
 
 // searchLyrics attempts to find lyrics with fallback to user input
@@ -113,16 +114,23 @@ func (lp *LyricsProcessor) createSafeFilename(title string) string {
 }
 
 // handleLyricsMode processes lyrics according to the configured mode
-func (lp *LyricsProcessor) handleLyricsMode(audioFilePath, safeTitle, audioFormat string, lr *lyrics.LRCLibResult) error {
+func (lp *LyricsProcessor) handleLyricsMode(audioFilePath, safeTitle string, lr *lyrics.LRCLibResult) error {
+	dir := filepath.Dir(audioFilePath)
+	lrcDir := filepath.Join(dir, "lrc")
+
+	// Ensure "lrc" directory exists
+	if err := os.MkdirAll(lrcDir, 0o700); err != nil {
+		color.Red("Failed to create lyrics directory: %v", err)
+		return err
+	}
+
 	switch lp.cfg.LyricsMode {
 	case "embedded":
 		// Embed lyrics directly into audio file
-		audioPath := audioFilePath
-		if err := lyrics.EmbedLyricsIntoAudio(audioPath, lr); err != nil {
+		if err := lyrics.EmbedLyricsIntoAudio(audioFilePath, lr); err != nil {
 			color.Yellow("Warning: Failed to embed lyrics into audio file: %v", err)
 			// Fallback to .lrc file
-			dir := filepath.Dir(audioFilePath)
-			lrcPath := filepath.Join(dir, fmt.Sprintf("%s.lrc", safeTitle))
+			lrcPath := filepath.Join(lrcDir, fmt.Sprintf("%s.lrc", safeTitle))
 			if err := lyrics.WriteLRCFile(lrcPath, lr); err != nil {
 				color.Red("Failed to save lyrics: %v", err)
 				return err
@@ -131,15 +139,16 @@ func (lp *LyricsProcessor) handleLyricsMode(audioFilePath, safeTitle, audioForma
 		} else {
 			color.Green("Lyrics embedded into audio file")
 		}
+
 	case "lrc":
 		// Save lyrics to .lrc file
-		dir := filepath.Dir(audioFilePath)
-		lrcPath := filepath.Join(dir, fmt.Sprintf("%s.lrc", safeTitle))
+		lrcPath := filepath.Join(lrcDir, fmt.Sprintf("%s.lrc", safeTitle))
 		if err := lyrics.WriteLRCFile(lrcPath, lr); err != nil {
 			color.Red("Failed to save lyrics: %v", err)
 			return err
 		}
 		color.Green("Lyrics saved to %s", lrcPath)
 	}
+
 	return nil
 }
