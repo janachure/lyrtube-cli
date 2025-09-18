@@ -21,11 +21,11 @@ type LRCLibResult struct {
 func FetchLyrics(title, artist string) (*LRCLibResult, error) {
 	var url string
 	if artist != "" {
-		url = fmt.Sprintf("https://lrclib.net/api/get?artist_name=%s&track_name=%s", 
-			strings.ReplaceAll(artist, " ", "+"), 
+		url = fmt.Sprintf("https://lrclib.net/api/get?artist_name=%s&track_name=%s",
+			strings.ReplaceAll(artist, " ", "+"),
 			strings.ReplaceAll(title, " ", "+"))
 	} else {
-		url = fmt.Sprintf("https://lrclib.net/api/get?track_name=%s", 
+		url = fmt.Sprintf("https://lrclib.net/api/get?track_name=%s",
 			strings.ReplaceAll(title, " ", "+"))
 	}
 
@@ -124,7 +124,7 @@ func EmbedLyricsIntoAudio(audioPath string, lr *LRCLibResult) error {
 	tempPath := base + "_temp" + ext
 
 	// Escape quotes and newlines in lyrics for shell command
-	escapedLyrics := strings.ReplaceAll(lr.LRC, `"`, `\"`) 
+	escapedLyrics := strings.ReplaceAll(lr.LRC, `"`, `\"`)
 	escapedLyrics = strings.ReplaceAll(escapedLyrics, "\n", "\\n")
 	escapedLyrics = strings.ReplaceAll(escapedLyrics, "$", "\\$")
 

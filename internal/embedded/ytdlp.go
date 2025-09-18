@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 )
 
 //go:embed yt-dlp
@@ -25,9 +24,6 @@ func GetYtDlpPath() (string, error) {
 
 	// Determine the binary name based on OS
 	binaryName := "yt-dlp"
-	if runtime.GOOS == "windows" {
-		binaryName = "yt-dlp.exe"
-	}
 
 	binaryPath := filepath.Join(tempDir, binaryName)
 

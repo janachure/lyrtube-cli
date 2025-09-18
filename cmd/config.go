@@ -27,7 +27,7 @@ var configEditCmd = &cobra.Command{
 		}
 		c := exec.Command(editor, path)
 		c.Stdin = os.Stdin
-		c.Stdout = os.Stdout	
+		c.Stdout = os.Stdout
 		c.Stderr = os.Stderr
 		if err := c.Run(); err != nil {
 			color.Red("Failed to open editor: %v", err)

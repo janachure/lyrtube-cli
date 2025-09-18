@@ -9,6 +9,7 @@ import (
 
 	"lyrtube-cli/internal/config"
 	"lyrtube-cli/internal/embedded"
+
 	"github.com/dhowden/tag"
 )
 
@@ -123,10 +124,10 @@ func cleanQueryString(s string) string {
 	// Remove content in parentheses and brackets
 	re := regexp.MustCompile(`\([^)]*\)|\[[^\]]*\]`)
 	s = re.ReplaceAllString(s, "")
-	
+
 	// Remove extra whitespace
 	s = strings.TrimSpace(s)
 	s = regexp.MustCompile(`\s+`).ReplaceAllString(s, " ")
-	
+
 	return s
 }
